@@ -1,0 +1,15 @@
+{
+  "env": {
+    "jest": true,
+    "node": true
+  },
+  "plugins": [
+    "prettier",
+    "security"
+  ],
+  "extends": [
+    "airbnb-base",
+    "plugin:security/recommended",
+    "plugin:prettier/recommended"
+  ]
+}
