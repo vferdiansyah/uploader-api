@@ -1,7 +1,7 @@
 import AdmZip from 'adm-zip';
 import { readdirSync, statSync } from 'fs';
 import { StatusCodes } from 'http-status-codes';
-import { join } from 'path';
+import { join, resolve } from 'path';
 import { fork } from 'child_process';
 import Response from '../commons/response';
 import { ResponseCodes, ResponseMessages } from '../constants';
@@ -24,25 +24,24 @@ const uploadService = async (req, res) => {
       if (!content.includes('__MACOSX') && stats.isDirectory()) {
         console.log('creating child process');
 
-        const batchChild = fork(join(__dirname, '../utils/batch.js'));
-        const computeChild = fork(join(__dirname, '../utils/compute.js'));
+        const batchChild = fork(resolve(join(__dirname, '../utils/batch.js')));
+        const computeChild = fork(
+          resolve(join(__dirname, '../utils/compute.js')),
+        );
 
         batchChild.on('message', (message) => {
-          console.log(message);
-
-          computeChild.on('message', (msg) => {
-            console.log(msg);
-            const response = new Response(
-              ResponseCodes.OK,
-              ResponseMessages.SUCCESS,
-            );
-            res.status(StatusCodes.OK).json(response);
-          });
-
-          computeChild.send('');
+          if (message === 'compute') {
+            computeChild.send('');
+          }
         });
 
         batchChild.send('');
+
+        const response = new Response(
+          ResponseCodes.OK,
+          ResponseMessages.SUCCESS,
+        );
+        res.status(StatusCodes.OK).json(response);
       }
     }),
   ]);

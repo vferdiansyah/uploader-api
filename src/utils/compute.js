@@ -1,12 +1,12 @@
 const { spawn } = require('child_process');
-const { join } = require('path');
+const { join, resolve } = require('path');
 
 function compute() {
   console.log('compute process started');
 
   const currentDate = new Date().toISOString().substring(0, 10);
   const child = spawn(`${process.env.MESHROOM_PATH}/meshroom_compute`, [
-    join(__dirname, `../../uploads/${currentDate}/project.mg`),
+    resolve(join(__dirname, `../../uploads/${currentDate}/project.mg`)),
     '--toNode',
     'Publish_1',
     '--forceStatus',
@@ -25,11 +25,10 @@ function compute() {
   });
 
   child.on('close', (code) => {
-    console.log(`child process exited with code ${code}`);
+    console.log(`compute process exited with code ${code}`);
   });
 }
 
 process.on('message', () => {
   compute();
-  process.send('compute process finished');
 });

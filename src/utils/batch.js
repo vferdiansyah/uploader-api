@@ -1,5 +1,5 @@
 const { spawn } = require('child_process');
-const { join } = require('path');
+const { join, resolve } = require('path');
 
 function batch() {
   console.log('batch process started');
@@ -9,11 +9,11 @@ function batch() {
 
   const child = spawn(`${process.env.MESHROOM_PATH}/meshroom_batch`, [
     '--input',
-    join(__dirname, `../../uploads/${currentDate}/input`),
+    resolve(join(__dirname, `../../uploads/${currentDate}/input`)),
     '--output',
-    join(__dirname, `../../uploads/${currentDate}/output`),
+    resolve(join(__dirname, `../../uploads/${currentDate}/output`)),
     '--save',
-    join(__dirname, `../../uploads/${currentDate}/project.mg`),
+    resolve(join(__dirname, `../../uploads/${currentDate}/project.mg`)),
   ]);
 
   child.stdout.on('data', (data) => {
@@ -29,11 +29,13 @@ function batch() {
   });
 
   child.on('close', (code) => {
-    console.log(`child process exited with code ${code}`);
+    console.log(`batch process exited with code ${code}`);
+    if (code === 0) {
+      process.send('compute');
+    }
   });
 }
 
-process.on('message', (message) => {
-  batch(message);
-  process.send('batch process finished');
+process.on('message', () => {
+  batch();
 });
