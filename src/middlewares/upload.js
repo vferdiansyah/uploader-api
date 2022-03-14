@@ -1,4 +1,3 @@
-import { readdirSync } from 'fs';
 import { StatusCodes } from 'http-status-codes';
 import multer from 'multer';
 import Response from '../commons/response';
@@ -25,12 +24,6 @@ const multerOptions = multer({
       req.fileNotSupported = ResponseMessages.FILE_NOT_SUPPORTED;
       return cb(null, false);
     }
-    // const files = readdirSync(uploadPathDir);
-
-    // if (files.includes(file.originalname)) {
-    //   req.fileExist = ResponseMessages.FILE_EXIST;
-    //   return cb(null, false);
-    // }
 
     return cb(null, true);
   },

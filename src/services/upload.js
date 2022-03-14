@@ -40,6 +40,7 @@ const uploadService = async (req, res) => {
               ),
               join(__dirname, `../../${paths[0]}/${paths[1]}/${paths[2]}`),
             );
+            output.writeZip('output.zip');
             res.download(
               join(
                 __dirname,
