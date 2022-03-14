@@ -25,12 +25,12 @@ const multerOptions = multer({
       req.fileNotSupported = ResponseMessages.FILE_NOT_SUPPORTED;
       return cb(null, false);
     }
-    const files = readdirSync(uploadPathDir);
+    // const files = readdirSync(uploadPathDir);
 
-    if (files.includes(file.originalname)) {
-      req.fileExist = ResponseMessages.FILE_EXIST;
-      return cb(null, false);
-    }
+    // if (files.includes(file.originalname)) {
+    //   req.fileExist = ResponseMessages.FILE_EXIST;
+    //   return cb(null, false);
+    // }
 
     return cb(null, true);
   },

@@ -9,8 +9,7 @@ const { error, value: envVar } = schema.validate(process.env, {
   stripUnknown: true,
 });
 if (error) {
-  console.log(error);
-  throw new Error(`Upload config validation error: ${error.message}`);
+  throw new Error(`Meshroom config validation error: ${error.message}`);
 }
 
 const config = {

@@ -1,19 +1,27 @@
 const { spawn } = require('child_process');
 const { join, resolve } = require('path');
 
-function batch() {
+function batch(dirPath) {
   console.log('batch process started');
 
-  const currentDate = new Date().toISOString().substring(0, 10);
-  spawn('mkdir', [join(__dirname, `../../uploads/${currentDate}/output`)]);
+  const paths = dirPath.split('/');
+  spawn('mkdir', [
+    join(__dirname, `../../${paths[0]}/${paths[1]}/${paths[2]}/output`),
+  ]);
 
   const child = spawn(`${process.env.MESHROOM_PATH}/meshroom_batch`, [
     '--input',
-    resolve(join(__dirname, `../../uploads/${currentDate}/input`)),
+    resolve(
+      join(__dirname, `../../${paths[0]}/${paths[1]}/${paths[2]}/${paths[3]}`),
+    ),
     '--output',
-    resolve(join(__dirname, `../../uploads/${currentDate}/output`)),
+    resolve(
+      join(__dirname, `../../${paths[0]}/${paths[1]}/${paths[2]}/output`),
+    ),
     '--save',
-    resolve(join(__dirname, `../../uploads/${currentDate}/project.mg`)),
+    resolve(
+      join(__dirname, `../../${paths[0]}/${paths[1]}/${paths[2]}/project.mg`),
+    ),
   ]);
 
   child.stdout.on('data', (data) => {
@@ -31,11 +39,14 @@ function batch() {
   child.on('close', (code) => {
     console.log(`batch process exited with code ${code}`);
     if (code === 0) {
-      process.send('compute');
+      process.send({
+        process: 'compute',
+        paths,
+      });
     }
   });
 }
 
-process.on('message', () => {
-  batch();
+process.on('message', (message) => {
+  batch(message);
 });

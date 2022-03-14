@@ -1,17 +1,14 @@
 import AdmZip from 'adm-zip';
-import { readdirSync, statSync } from 'fs';
-import { StatusCodes } from 'http-status-codes';
-import { join, resolve } from 'path';
 import { fork } from 'child_process';
-import Response from '../commons/response';
-import { ResponseCodes, ResponseMessages } from '../constants';
+import { readdirSync, statSync } from 'fs';
+import { join, resolve } from 'path';
 
 const uploadService = async (req, res) => {
   const { file } = req;
   const { destination, filename } = file;
 
   const filepath = join(destination, filename);
-  const unzipDestinationPath = `${destination}`;
+  const unzipDestinationPath = `${destination}/${Math.floor(Date.now())}`;
   const zip = new AdmZip(filepath);
   zip.extractAllTo(unzipDestinationPath);
 
@@ -30,18 +27,30 @@ const uploadService = async (req, res) => {
         );
 
         batchChild.on('message', (message) => {
-          if (message === 'compute') {
-            computeChild.send('');
+          if (message.process === 'compute') {
+            computeChild.send(message.paths);
+          }
+          if (message.process === 'finish') {
+            const paths = fullPathToDir.split('/');
+            const output = new AdmZip();
+            output.addLocalFolder(
+              join(
+                __dirname,
+                `../../${paths[0]}/${paths[1]}/${paths[2]}/output`,
+              ),
+              join(__dirname, `../../${paths[0]}/${paths[1]}/${paths[2]}`),
+            );
+            res.download(
+              join(
+                __dirname,
+                `../../${paths[0]}/${paths[1]}/${paths[2]}`,
+                'output.zip',
+              ),
+            );
           }
         });
 
-        batchChild.send('');
-
-        const response = new Response(
-          ResponseCodes.OK,
-          ResponseMessages.SUCCESS,
-        );
-        res.status(StatusCodes.OK).json(response);
+        batchChild.send(fullPathToDir);
       }
     }),
   ]);
